@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/brendanball/android-remote/grpc"
 	"github.com/brendanball/android-remote/touchpad"
 )
 
@@ -27,4 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer touchpad.Close()
+
+	grpc.Serve(&touchpad)
+
 }

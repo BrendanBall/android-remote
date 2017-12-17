@@ -15,6 +15,7 @@ import (
 )
 
 type Touchpad interface {
+	Move(e MoveEvent) error
 }
 
 type Device struct {
@@ -26,6 +27,8 @@ type Device struct {
 	uidev        *C.struct_libevdev_uinput
 	dev          *C.struct_libevdev
 }
+
+var _ Touchpad = &Device{}
 
 type Properties struct {
 	Max        int
@@ -79,6 +82,23 @@ func (d *Device) Close() error {
 	C.libevdev_free(d.dev)
 	return nil
 }
+
+type MoveEvent struct {
+	PointerID int32
+	PositionX int32
+	PositionY int32
+	Pressure  int32
+}
+
+func (d *Device) Move(e MoveEvent) error {
+	check(C.libevdev_uinput_write_event(d.uidev, C.EV_ABS, C.ABS_MT_TRACKING_ID, C.int(e.PointerID)))
+	check(C.libevdev_uinput_write_event(d.uidev, C.EV_ABS, C.ABS_MT_POSITION_X, C.int(e.PositionX)))
+	check(C.libevdev_uinput_write_event(d.uidev, C.EV_ABS, C.ABS_MT_POSITION_Y, C.int(e.PositionY)))
+	check(C.libevdev_uinput_write_event(d.uidev, C.EV_ABS, C.ABS_MT_PRESSURE, C.int(e.Pressure)))
+	check(C.libevdev_uinput_write_event(d.uidev, C.EV_SYN, C.SYN_REPORT, 0))
+	return nil
+}
+
 func check(err C.int) {
 	if err != 0 {
 		debug.PrintStack()
