@@ -1,6 +1,8 @@
 package grpc
 
 import (
+	"log"
+
 	driver "github.com/brendanball/android-remote/touchpad"
 	"golang.org/x/net/context"
 )
@@ -17,6 +19,7 @@ func NewTouchpadServer(d driver.Touchpad) TouchpadServer {
 
 func (t *touchpad) Move(ctx context.Context, mr *MoveRequest) (*MoveReply, error) {
 	for _, me := range mr.GetMoveEvents() {
+		log.Printf("event: %#v", me)
 		t.driver.Move(driver.MoveEvent{
 			PointerID: me.PointerId,
 			PositionX: me.PositionX,
