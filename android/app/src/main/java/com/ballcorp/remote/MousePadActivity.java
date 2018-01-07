@@ -25,11 +25,10 @@ public class MousePadActivity extends Activity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
-            case MotionEvent.ACTION_MOVE:
-                float x = event.getX(0);
-                float y = event.getY(0);
-                Log.i("touch", "onTouchEvent x: "+ x + " y: "+ y);
-                grpcService.move(getMoveEvents(event));
+           case MotionEvent.ACTION_MOVE:
+               grpcService.move(getMoveEvents(event));
+            // case MotionEvent.ACTION_UP:
+            //     Log.i("touchevent up", "pointer id: "+ event.getPointerId(event.getActionIndex()));
         }
         return true;
     }
@@ -42,21 +41,23 @@ public class MousePadActivity extends Activity {
         int i = 0;
         for (int h = 0; h < historySize; h++) {
             for (int p = 0; p < pointerCount; p++) {
+                Log.i("motionevent", "pointer id: "+ e.getPointerId(p));
                 moveEvents[i] = MoveEvent.newBuilder()
                         .setPointerId(e.getPointerId(p))
                         .setPositionX((int) e.getHistoricalX(p, h))
                         .setPositionY((int) e.getHistoricalY(p, h))
-                        .setPressure( (int) e.getHistoricalPressure(p, h))
+                        .setPressure( (int) (e.getHistoricalPressure(p, h) * 100))
                         .build();
                 i++;
             }
         }
         for (int p = 0; p < pointerCount; p++) {
+            Log.i("motionevent", "pressure: "+ e.getPressure(p));
             moveEvents[i] = MoveEvent.newBuilder()
                     .setPointerId(e.getPointerId(p))
                     .setPositionX((int) e.getX(p))
                     .setPositionY((int) e.getY(p))
-                    .setPressure( (int) e.getPressure(p))
+                    .setPressure((int) (e.getPressure(p) * 100))
                     .build();
             i++;
         }

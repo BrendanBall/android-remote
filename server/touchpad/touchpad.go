@@ -55,7 +55,7 @@ func (d *Device) Init() error {
 			resolution: C.__s32(d.YProperties.Resolution),
 		})
 		mtPressureAbsinfo = unsafe.Pointer(&C.struct_input_absinfo{
-			maximum: 255,
+			maximum: 100,
 		})
 	)
 	dev := C.libevdev_new()

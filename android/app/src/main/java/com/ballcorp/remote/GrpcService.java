@@ -6,19 +6,22 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
 
 public class GrpcService extends Service {
 
     private String mHost = "192.168.1.103";
     private int mPort =  50051;
     private ManagedChannel mChannel;
-    private TouchpadGrpc.TouchpadBlockingStub stub;
+    private TouchpadGrpc.TouchpadStub stub;
 
     private final IBinder binder = new GrpcBinder();
 
@@ -41,7 +44,7 @@ public class GrpcService extends Service {
             mChannel = ManagedChannelBuilder.forAddress(mHost, mPort)
                     .usePlaintext(true)
                     .build();
-            stub = TouchpadGrpc.newBlockingStub(mChannel);
+            stub = TouchpadGrpc.newStub(mChannel);
         } catch(Exception e) {
             Log.e("grpc", "failed connecting grpc server", e);
         }
@@ -64,7 +67,18 @@ public class GrpcService extends Service {
     public void move(MoveEvent... events) {
         try {
             MoveRequest message = MoveRequest.newBuilder().addAllMoveEvents(Arrays.asList(events)).build();
-            stub.move(message);
+            stub.move(message, new StreamObserver<MoveReply>() {
+                @Override
+                public void onNext(MoveReply value) { }
+
+                @Override
+                public void onError(Throwable t) {
+                   Log.e("grpc", "move error", t);
+                }
+
+                @Override
+                public void onCompleted() { }
+           });
         } catch(Exception e) {
             Log.e("grpc", "failed making grpc call", e);
         }
